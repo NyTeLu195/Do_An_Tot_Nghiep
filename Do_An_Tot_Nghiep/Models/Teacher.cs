@@ -1,4 +1,8 @@
-﻿using System;
+﻿
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 namespace Do_An_Tot_Nghiep.Models
 {
     public class Teacher
@@ -22,6 +26,9 @@ namespace Do_An_Tot_Nghiep.Models
         public Guid UserCreataID { get; set; }
 
         public Guid UserUpdateID { get; set; }
+
+        public List<Classroom> Classrooms { get; set; }
+        public List<Assignment> Assignments { get; set; }
 
     }
 }
