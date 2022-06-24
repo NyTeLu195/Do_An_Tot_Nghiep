@@ -5,20 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 namespace Do_An_Tot_Nghiep.Models
 {
-    public class Classroom
+    public class Attendance
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public Guid StudentID { get; set; }
+        public string History { get; set; }
         public int Year { get; set; }
-        public Guid HomeroomTeacherID { get; set; }
-        public int TotalNumberStudent { get; set; }
-        public int Grade { get; set; }
         public string Status { get; set; }
         public bool IsDelete { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateUpdate { get; set; }
         public Guid UserCreataID { get; set; }
         public Guid UserUpdateID { get; set; }
-        public List<Assignment> Assignments { get; set; }
+
+
     }
 }
