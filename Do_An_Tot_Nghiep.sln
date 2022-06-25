@@ -5,11 +5,17 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Do_An_Tot_Nghiep", "Do_An_Tot_Nghiep\Do_An_Tot_Nghiep.csproj", "{53CC1AF7-3C2C-466C-A1FE-C82A71EB7AE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduManage.Application", "EduManage.Application\EduManage.Application.csproj", "{4304F85F-56B1-4D50-94FD-31C0B748EDC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduManage.Application", "EduManage.Application\EduManage.Application.csproj", "{4304F85F-56B1-4D50-94FD-31C0B748EDC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduManage.Domain", "EduManage.Domain\EduManage.Domain.csproj", "{4ABE8802-A39F-4127-A79E-7C6F15388083}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduManage.Domain", "EduManage.Domain\EduManage.Domain.csproj", "{4ABE8802-A39F-4127-A79E-7C6F15388083}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduManage.Infrastructure", "EduManage.Infrastructure\EduManage.Infrastructure.csproj", "{7EFABD5C-762D-464D-8CD4-3B59E234E1B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduManage.Infrastructure", "EduManage.Infrastructure\EduManage.Infrastructure.csproj", "{7EFABD5C-762D-464D-8CD4-3B59E234E1B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{5DDA94BE-1B2F-4576-8D11-9FB3CE79FA66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduManage.Core.Application", "EduManage.Core.Application\EduManage.Core.Application.csproj", "{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduManage.Core.Domain", "EduManage.Core.Domain\EduManage.Core.Domain.csproj", "{5EA66C67-6055-4EAB-90B0-6BC961C16E8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +39,21 @@ Global
 		{7EFABD5C-762D-464D-8CD4-3B59E234E1B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EFABD5C-762D-464D-8CD4-3B59E234E1B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EFABD5C-762D-464D-8CD4-3B59E234E1B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EA66C67-6055-4EAB-90B0-6BC961C16E8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EA66C67-6055-4EAB-90B0-6BC961C16E8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EA66C67-6055-4EAB-90B0-6BC961C16E8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EA66C67-6055-4EAB-90B0-6BC961C16E8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1E84EE08-746D-4CB4-8AE0-56A6CFE9768C} = {5DDA94BE-1B2F-4576-8D11-9FB3CE79FA66}
+		{5EA66C67-6055-4EAB-90B0-6BC961C16E8D} = {5DDA94BE-1B2F-4576-8D11-9FB3CE79FA66}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAE918C-4B3D-4E7A-AA48-564720E80C24}
