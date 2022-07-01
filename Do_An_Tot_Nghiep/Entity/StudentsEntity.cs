@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-namespace Do_An_Tot_Nghiep.Models
+namespace Do_An_Tot_Nghiep.Entity
 {
    
-    public class Students
+    public class StudentsEntity
     {
         public Guid Id { get; set; }
         public string FisrtName { get; set; }
@@ -27,5 +27,8 @@ namespace Do_An_Tot_Nghiep.Models
         public Guid UserCreataID { get; set; }
 
         public Guid UserUpdateID { get; set; }
+        public List<AttendanceEntity> AttendanceEntitys { get; set; }
+        public List<ViolationHistoryEntity> ViolationHistoryEntitys { get; set; }
+
     }
 }
