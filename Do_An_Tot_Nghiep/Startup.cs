@@ -17,6 +17,7 @@ namespace Do_An_Tot_Nghiep
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -36,8 +37,18 @@ namespace Do_An_Tot_Nghiep
 
             services.AddDbContext<EduManageContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("EduManageContext")));
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                                   builder =>
+                                   {
+                                       builder.AllowAnyOrigin()
+                                              .AllowAnyHeader()
+                                              .AllowAnyMethod();
+                                   });
+            });
 
-           // services.AddDbContext<EduManageContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EduManageContext")));
+            // services.AddDbContext<EduManageContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EduManageContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,7 +62,7 @@ namespace Do_An_Tot_Nghiep
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseRouting();
 
             app.UseAuthorization();
