@@ -24,9 +24,26 @@ namespace Do_An_Tot_Nghiep.Controllers
 
         // GET: api/Students
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StudentsEntity>>> GetStudentsEntity()
+        public async Task<ActionResult<ResponseGridModel>> GetAllStudents()
         {
-            return await _context.StudentsEntity.ToListAsync();
+            ResponseGridModel response =  new ResponseGridModel();
+            try
+            {
+                List<StudentsEntity> student = _context.StudentsEntity.Where(x => x.IsDeleted != true).ToList();
+
+                return new ResponseGridModel()
+                {
+                    Data = student,
+                    Total = student.Count
+                };
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+
+         
         }
 
         // GET: api/Students/5
