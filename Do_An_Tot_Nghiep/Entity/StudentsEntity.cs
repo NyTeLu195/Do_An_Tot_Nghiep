@@ -9,6 +9,7 @@ namespace Do_An_Tot_Nghiep.Entity
     public class StudentsEntity
     {
         public Guid Id { get; set; }
+        public int Code { get; set; }
         public string FisrtName { get; set; }
         public string LastName { get; set; }
         public int Age { get; set; }
@@ -19,7 +20,7 @@ namespace Do_An_Tot_Nghiep.Entity
         public string UserName { get; set; }
         public string Password { get; set; }
         public string Status { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; }
         public DateTime DateCreated { get; set; }
 
         public DateTime DateUpdate { get; set; }
