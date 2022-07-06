@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Do_An_Tot_Nghiep.Entity;
 using Do_An_Tot_Nghiep.Model;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Do_An_Tot_Nghiep.Controllers
 {
@@ -29,12 +31,28 @@ namespace Do_An_Tot_Nghiep.Controllers
             ResponseGridModel response =  new ResponseGridModel();
             try
             {
-                List<StudentsEntity> student = _context.StudentsEntity.Where(x => x.IsDeleted != true).ToList();
+                List<StudentReponseDTO> listStudents = _context.StudentsEntity
+                                                                .Where(x => x.IsDeleted != true)
+                                                                .Select(s => new StudentReponseDTO 
+                                                                {
+                                                                    Code = s.Code,
+                                                                    FisrtName = s.FisrtName,
+                                                                    LastName = s.LastName,
+                                                                    Age=s.Age,
+                                                                    BirthDate = s.BirthDate,
+                                                                    Address = s.Address,
+                                                                    Phone = s.Phone,
+                                                                    UserName = s.UserName,
+                                                                    Status = s.Status,
+                                                                    Process = s.Process,
+                                                                }
+                                                                 )
+                                                              .ToList();
 
                 return new ResponseGridModel()
                 {
-                    Data = student,
-                    Total = student.Count
+                    Data = listStudents,
+                    Total = listStudents.Count
                 };
             }
             catch (Exception ex)
@@ -46,19 +64,6 @@ namespace Do_An_Tot_Nghiep.Controllers
          
         }
 
-        // GET: api/Students/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<StudentsEntity>> GetStudentsEntity(Guid id)
-        {
-            var studentsEntity = await _context.StudentsEntity.FindAsync(id);
-
-            if (studentsEntity == null)
-            {
-                return NotFound();
-            }
-
-            return studentsEntity;
-        }
 
         // PUT: api/Students/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -93,13 +98,75 @@ namespace Do_An_Tot_Nghiep.Controllers
 
         // POST: api/Students
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<StudentsEntity>> PostStudentsEntity(StudentsEntity studentsEntity)
+        public static string GetHash(string plainText)
         {
-            _context.StudentsEntity.Add(studentsEntity);
-            await _context.SaveChangesAsync();
+            MD5 md5 = new MD5CryptoServiceProvider();
+            // Compute hash from the bytes of text
+            md5.ComputeHash(ASCIIEncoding.ASCII.GetBytes(plainText));
+            // Get hash result after compute it
+            byte[] result = md5.Hash;
+            StringBuilder strBuilder = new StringBuilder();
+            for (int i = 0; i < result.Length; i++)
+            {
+                strBuilder.Append(result[i].ToString("x2"));
+            }
 
-            return CreatedAtAction("GetStudentsEntity", new { id = studentsEntity.Id }, studentsEntity);
+            return strBuilder.ToString();
+        }
+        [HttpPost]
+        public async Task<ActionResult<ResponseModel>> CreateStudent(CreateStudentCommand request)
+        {
+            ResponseModel responseModel = new ResponseModel()
+            {
+                isSuccess = false,
+            };
+            try 
+            {
+                var lastStudent= _context.StudentsEntity.OrderByDescending(x=>x.DateCreated).FirstOrDefault();
+                var checkduplicate = _context.StudentsEntity.Where(x => x.UserName == request.UserName&& x.IsDeleted!= true).ToList();
+                if(checkduplicate== null|| checkduplicate.Count==0)
+                {
+                    StudentsEntity studentsEntity = new StudentsEntity()
+                    {
+                        Address = request.Address,
+                        Process = null,
+                        Status = null,
+                        IsDeleted = null,
+                        Id = new Guid(),
+                        Age =  DateTime.Now.Year - request.BirthDate.Year,
+                        BirthDate = request.BirthDate,
+                        Code = lastStudent != null ? lastStudent.Code + 1 : 1,
+                        DateCreated = DateTime.Now,
+                        DateUpdate = DateTime.Now,
+                        FisrtName = request.FisrtName,
+                        LastName = request.LastName,
+                        Phone = request.Phone,
+                        UserName = request.UserName,
+                        Password = GetHash(request.Password),
+                        UserCreataID = request.UserLogin,
+                        UserUpdateID = request.UserLogin,
+
+                    };
+                    _context.StudentsEntity.Add(studentsEntity);
+                    await _context.SaveChangesAsync();
+                    responseModel.isSuccess = true;
+                    responseModel.data = studentsEntity;
+                }
+                else
+                {
+                    responseModel.message = "UserName đã tồn tại";
+                }
+                return responseModel;
+
+            }
+            catch (Exception ex)
+            {
+
+                responseModel.message= ex.Message;
+                return responseModel;
+            }
+
+
         }
 
         [HttpPost]

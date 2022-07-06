@@ -100,7 +100,7 @@ namespace Do_An_Tot_Nghiep.Controllers
                     {
                         Id = new Guid(),
                         Grade = request.Grande,
-                        Name = request.Grande + request.Key + i + 1,
+                        Name = request.Grande + request.Key +( i + 1),
                         Year = request.Year,
                         UserCreataID = request.UserID,
                         UserUpdateID = request.UserID,
@@ -158,7 +158,25 @@ namespace Do_An_Tot_Nghiep.Controllers
 
             return responseModel;
         }
+        [HttpPost]
+        public async Task<ActionResult<ResponseModel>> AutoCountTotalStudent(Guid classroomID)
+        {
+            ResponseModel responseModel = new ResponseModel()
+            {
+                isSuccess = false,
+            };
+            try 
+            { 
+               //int Total = _context.StudentsEntity.CountAsync() 
+            }
+            catch(Exception ex)
+            {
 
+            }
+
+
+            return responseModel;
+        }
 
         // DELETE: api/Classroom/5
         [HttpDelete("{id}")]
