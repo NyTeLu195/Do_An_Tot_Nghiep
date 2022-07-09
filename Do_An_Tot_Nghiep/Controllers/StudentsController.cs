@@ -35,6 +35,7 @@ namespace Do_An_Tot_Nghiep.Controllers
                                                                 .Where(x => x.IsDeleted != true)
                                                                 .Select(s => new StudentReponseDTO 
                                                                 {
+                                                                    Id = s.Id,
                                                                     Code = s.Code,
                                                                     FisrtName = s.FisrtName,
                                                                     LastName = s.LastName,
@@ -43,6 +44,7 @@ namespace Do_An_Tot_Nghiep.Controllers
                                                                     Address = s.Address,
                                                                     Phone = s.Phone,
                                                                     UserName = s.UserName,
+                                                                    Role = s.Role,
                                                                     Status = s.Status,
                                                                     Process = s.Process,
                                                                 }
@@ -128,6 +130,7 @@ namespace Do_An_Tot_Nghiep.Controllers
                 {
                     StudentsEntity studentsEntity = new StudentsEntity()
                     {
+
                         Address = request.Address,
                         Process = null,
                         Status = null,

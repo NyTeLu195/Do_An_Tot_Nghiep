@@ -7,6 +7,7 @@ namespace Do_An_Tot_Nghiep.Model
 {
     public class StudentReponseDTO
     {
+        public Guid Id { get; set; }
         public int Code { get; set; }
         public string FisrtName { get; set; }
         public string LastName { get; set; }
@@ -16,6 +17,7 @@ namespace Do_An_Tot_Nghiep.Model
         public string Phone { get; set; }
         public string Process { get; set; }
         public string UserName { get; set; }
+        public string Role { get; set; }    
         public string Status { get; set; }
     }
 }
