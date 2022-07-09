@@ -70,7 +70,7 @@ namespace Do_An_Tot_Nghiep.Controllers
         // PUT: api/Students/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutStudentsEntity(Guid id, StudentsEntity studentsEntity)
+        public async Task<IActionResult> UpdateStudentsEntity(Guid id, StudentsEntity studentsEntity)
         {
             if (id != studentsEntity.Id)
             {
@@ -116,7 +116,7 @@ namespace Do_An_Tot_Nghiep.Controllers
             return strBuilder.ToString();
         }
         [HttpPost]
-        public async Task<ActionResult<ResponseModel>> CreateStudent(CreateStudentCommand request)
+        public async Task<ActionResult<ResponseModel>> CreateorUpdateStudent(CreateorUpdateStudentCommand request)
         {
             ResponseModel responseModel = new ResponseModel()
             {
@@ -124,15 +124,38 @@ namespace Do_An_Tot_Nghiep.Controllers
             };
             try 
             {
+
+
                 var lastStudent= _context.StudentsEntity.OrderByDescending(x=>x.DateCreated).FirstOrDefault();
                 var checkduplicate = _context.StudentsEntity.Where(x => x.UserName == request.UserName&& x.IsDeleted!= true).ToList();
                 if(checkduplicate== null|| checkduplicate.Count==0)
                 {
-                    StudentsEntity studentsEntity = new StudentsEntity()
+                    if (request.Id != null&& request.Id!= Guid.Empty)
+                    { 
+                    var objStudent = _context.StudentsEntity.Where(x => x.Id == request.Id && x.IsDeleted != true).FirstOrDefault();
+                        if (objStudent != null)
+                        {
+                            objStudent.Address = request.Address;
+                            objStudent.Age = DateTime.Now.Year - request.BirthDate.Year;
+                            objStudent.BirthDate = request.BirthDate;
+                            objStudent.DateUpdate = DateTime.Now;
+                            objStudent.FisrtName = request.FisrtName;
+                            objStudent.LastName = request.LastName;
+                            objStudent.Phone = request.Phone;
+                            objStudent.UserName = request.UserName;
+                            objStudent.Password = GetHash(request.Password);
+                            _context.StudentsEntity.Update(objStudent);
+                            responseModel.data= objStudent;
+                        }    
+
+                    }
+                    else
+                    {
+                         StudentsEntity studentsEntity = new StudentsEntity()
                     {
 
                         Address = request.Address,
-                        Process = null,
+                        Process = null, 
                         Status = null,
                         IsDeleted = null,
                         Id = new Guid(),
@@ -151,9 +174,12 @@ namespace Do_An_Tot_Nghiep.Controllers
 
                     };
                     _context.StudentsEntity.Add(studentsEntity);
+                     responseModel.data = studentsEntity;
+                    }    
+                   
                     await _context.SaveChangesAsync();
                     responseModel.isSuccess = true;
-                    responseModel.data = studentsEntity;
+                
                 }
                 else
                 {
@@ -190,7 +216,6 @@ namespace Do_An_Tot_Nghiep.Controllers
                             .FirstOrDefault();
                         if (objstudent != null)
                         {
-                            objstudent.DateCreated = DateTime.Now;
                             objstudent.DateUpdate = DateTime.Now;
                             if(objstudent.Process!= null)
                             {
@@ -241,18 +266,29 @@ namespace Do_An_Tot_Nghiep.Controllers
 
         // DELETE: api/Students/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStudentsEntity(Guid id)
+        public async Task<ActionResult<ResponseModel>> DeleteStudentsEntity(Guid id)
         {
-            var studentsEntity = await _context.StudentsEntity.FindAsync(id);
-            if (studentsEntity == null)
+            ResponseModel responseModel = new ResponseModel()
             {
-                return NotFound();
+                isSuccess = false
+            };
+            try 
+            {
+                var studentsEntity = _context.StudentsEntity.Where(x => x.IsDeleted != true && x.Id == id).FirstOrDefault();
+                if (studentsEntity == null)
+                {
+                    return NotFound();
+                }
+
+                studentsEntity.IsDeleted = true;
+                _context.StudentsEntity.Update(studentsEntity);
+                await _context.SaveChangesAsync();
             }
-
-            _context.StudentsEntity.Remove(studentsEntity);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch(Exception ex)
+            {
+                responseModel.data = ex.Message;
+            }
+            return responseModel;
         }
 
         private bool StudentsEntityExists(Guid id)

@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Do_An_Tot_Nghiep.Model
 {
-    public class CreateStudentCommand
+    public class CreateorUpdateStudentCommand
     {
+        public Guid? Id { get; set; }
         public string FisrtName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }
