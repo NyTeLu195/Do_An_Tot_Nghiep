@@ -22,66 +22,166 @@ namespace Do_An_Tot_Nghiep.Controllers
         }
 
         // GET: api/Classroom
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ClassroomEntity>>> GetClassroomEntity()
+        [HttpPost]
+        public async Task<ActionResult<ResponseGridModel>> GetClassroom(GetClassroomQueries requests)
         {
-            return await _context.ClassroomEntity.ToListAsync();
+
+            try
+            {
+                List<ClassroomReponseDTO> listClassroom = _context.ClassroomEntity.Where(x => x.Name.Contains(requests.Name != null ? requests.Name : x.Name) 
+                                                                                        && x.Year == (requests.Year != null ? requests.Year : x.Year) 
+                                                                                        && x.IsDelete!=true)
+                                                                                 .Select(x => new ClassroomReponseDTO()
+                                                                                {
+                                                                                    Id = x.Id,
+                                                                                    Name = x.Name,
+                                                                                    Year = x.Year,
+                                                                                    Grade = x.Grade,
+                                                                                    Status = x.Status,
+                                                                                    TotalNumberStudent = x.TotalNumberStudent,
+                                                                                    TeacherName = x.TeacherID != Guid.Empty && x.TeacherID != null ? (x.TeacherEntity.FisrtName + x.TeacherEntity.LastName) : ""
+                                                                                }).ToList();
+                return new ResponseGridModel()
+                {
+                    Data = listClassroom,
+                    Total = listClassroom.Count,
+                };
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
+    
 
         // GET: api/Classroom/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ClassroomEntity>> GetClassroomEntity(Guid id)
+        public async Task<ActionResult<ResponseModel>> GetClassroomById(Guid id)
         {
-            var classroomEntity = await _context.ClassroomEntity.FindAsync(id);
-
-            if (classroomEntity == null)
+            ResponseModel response = new ResponseModel()
             {
-                return NotFound();
-            }
+                isSuccess = false,
+            };
+          try
+            {
+                ClassroomReponseDTO classroomReponseDTO = _context.ClassroomEntity.Where(x => x.Id == id && x.IsDelete!=true).Select(x => new ClassroomReponseDTO
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Year = x.Year,
+                    Grade = x.Grade,
+                    Status = x.Status,
+                    TotalNumberStudent = x.TotalNumberStudent,
+                    TeacherName = x.TeacherID != Guid.Empty && x.TeacherID != null ? (x.TeacherEntity.FisrtName + x.TeacherEntity.LastName) : ""
+                }).FirstOrDefault();
 
-            return classroomEntity;
+                if (classroomReponseDTO != null)
+                {
+                    response.isSuccess = true;
+                    response.data = classroomReponseDTO;
+                    return response;
+                }
+                else 
+                {
+                    response.message = "Không tìm thấy lớp học";
+                    return response;
+                } 
+                    
+            }
+            catch (Exception ex) 
+            {
+                response.message=ex.Message;
+                return response;
+            }
         }
 
         // PUT: api/Classroom/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutClassroomEntity(Guid id, ClassroomEntity classroomEntity)
-        {
-            if (id != classroomEntity.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(classroomEntity).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ClassroomEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
+     
 
         // POST: api/Classroom
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ClassroomEntity>> PostClassroomEntity(ClassroomEntity classroomEntity)
+        public async Task<ActionResult<ResponseModel>> CreateOrUpdateClassroom(CreateOrUpdateClassroomCommand request)
         {
-            _context.ClassroomEntity.Add(classroomEntity);
-            await _context.SaveChangesAsync();
+            ResponseModel responseModel = new ResponseModel()
+            {
+                isSuccess = false,
+            };
+            try
+            {
+                if (request != null)
+                {
+                    if (request.Id != null && request.Id != Guid.Empty)
+                    {
+                        var objClassroom = _context.ClassroomEntity.Find(request.Id);
+                        if (objClassroom != null)
+                        {
+                            objClassroom.Name = (request.Grande + request.Key + request.Order);
+                            objClassroom.DateUpdate = DateTime.Now;
+                            objClassroom.TeacherID = request.TeacherId != null && request.TeacherId != Guid.Empty ? request.TeacherId : Guid.Empty;
+                            objClassroom.Year = request.Year;
 
-            return CreatedAtAction("GetClassroomEntity", new { id = classroomEntity.Id }, classroomEntity);
+                            var checkduplicate = _context.ClassroomEntity.Where(x => x.IsDelete != true
+                                                                      && x.Name.Contains(objClassroom.Name)
+                                                                      && x.Year == objClassroom.Year)
+                                                                      .FirstOrDefault();
+                            if (checkduplicate == null)
+                            {
+                                _context.ClassroomEntity.Update(objClassroom);
+
+                                responseModel.isSuccess = true;
+                                return responseModel;
+                            }
+                            else
+                            {
+                                responseModel.message = "Dữ liệu đã bị trùng";
+
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        ClassroomEntity obj = new ClassroomEntity()
+                        {
+                            Id = new Guid(),
+                            Name = (request.Grande + request.Key + request.Order),
+                            Year = request.Year,
+                            TeacherID = request.TeacherId != null && request.TeacherId != Guid.Empty ? request.TeacherId : Guid.Empty,
+                            UserCreataID = Guid.Empty,
+                            UserUpdateID = Guid.Empty,
+                            DateCreated = DateTime.Now,
+                            DateUpdate = DateTime.Now,
+                            TotalNumberStudent = 0
+                        };
+                        var checkduplicate = _context.ClassroomEntity.Where(x => x.IsDelete != true
+                                                                       && x.Name.Contains(obj.Name)
+                                                                       && x.Year == obj.Year)
+                                                                       .FirstOrDefault();
+                        if (checkduplicate == null)
+                        {
+                            _context.ClassroomEntity.Add(obj);
+                            responseModel.isSuccess=true;
+                            return responseModel;
+                        }
+                    
+                    }
+
+                }
+                else
+                {
+                    responseModel.message = "Dữ liệu trống";
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                responseModel.message=ex.Message;
+                
+            }
+            
+            return responseModel;
         }
 
         [HttpPost]
@@ -142,12 +242,12 @@ namespace Do_An_Tot_Nghiep.Controllers
             };
             try
             {
-                var classroomEntity = await _context.ClassroomEntity.FindAsync(request.ClassroomID);
+                var classroomEntity =  _context.ClassroomEntity.Where(x=> x.Id==request.ClassroomID && x.IsDelete!=true).FirstOrDefault();
                 if (classroomEntity == null)
                 {
                     classroomEntity.TeacherID = request.TeacherID;
                     _context.ClassroomEntity.Update(classroomEntity);
-                }
+                }    
                 await _context.SaveChangesAsync();
                 responseModel.isSuccess = true;
             }
@@ -179,19 +279,31 @@ namespace Do_An_Tot_Nghiep.Controllers
         }
 
         // DELETE: api/Classroom/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteClassroomEntity(Guid id)
+        [HttpPost("{id}")]
+        public async Task<ActionResult<ResponseModel>> DeleteClassroomEntity(Guid id)
         {
-            var classroomEntity = await _context.ClassroomEntity.FindAsync(id);
-            if (classroomEntity == null)
+            ResponseModel responseModel = new ResponseModel()
             {
-                return NotFound();
+                isSuccess = false
+            };
+            try
+            {
+                var classroomEntity = _context.ClassroomEntity.Where(x => x.Id == id && x.IsDelete != true).FirstOrDefault();
+                if (classroomEntity == null)
+                {
+                    return NotFound();
+                }
+                classroomEntity.IsDelete = true;
+                _context.ClassroomEntity.Update(classroomEntity);
+                await _context.SaveChangesAsync();
+                responseModel.isSuccess=true;
             }
-
-            _context.ClassroomEntity.Remove(classroomEntity);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                responseModel.message=ex.Message;
+            }
+           
+            return responseModel;
         }
 
         private bool ClassroomEntityExists(Guid id)
