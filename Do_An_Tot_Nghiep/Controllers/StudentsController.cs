@@ -61,12 +61,58 @@ namespace Do_An_Tot_Nghiep.Controllers
             {
                 return null;
             }
-
-
-         
+ 
         }
 
+        [HttpGet]
+        public async Task<ActionResult<ResponseModel>> GetStudentByID(Guid StudentID)
+        {
+            ResponseModel response = new ResponseModel()
+            {
+                isSuccess = false
+            };
+            try
+            {
+                StudentReponseDTO objStudents = _context.StudentsEntity
+                                                                .Where(x => x.IsDeleted != true && x.Id== StudentID)
+                                                                .Select(s => new StudentReponseDTO
+                                                                {
+                                                                    Id = s.Id,
+                                                                    Code = s.Code,
+                                                                    FisrtName = s.FisrtName,
+                                                                    LastName = s.LastName,
+                                                                    Age = s.Age,
+                                                                    BirthDate = s.BirthDate,
+                                                                    Address = s.Address,
+                                                                    Phone = s.Phone,
+                                                                    UserName = s.UserName,
+                                                                    Role = s.Role,
+                                                                    Status = s.Status,
+                                                                    Process = s.Process,
+                                                                }
+                                                                 )
+                                                              .FirstOrDefault();
 
+                if(objStudents == null)
+                {
+                    response.message = "Không tìm thấy học sinh";
+                }
+                else
+                {
+                    response.data = objStudents;
+                    response.isSuccess = true;
+                }    
+              
+            
+            }
+            catch (Exception ex)
+            {
+                response.message = ex.Message;
+            }
+
+            return response;
+
+        }
         // PUT: api/Students/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
