@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Do_An_Tot_Nghiep.Entity;
+using Do_An_Tot_Nghiep.Model;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Do_An_Tot_Nghiep.Controllers
 {
@@ -22,23 +25,88 @@ namespace Do_An_Tot_Nghiep.Controllers
 
         // GET: api/TeacherEntities
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TeacherEntity>>> GetTeacherEntity()
+        public async Task<ActionResult<ResponseGridModel>> GetTeacherEntity(GetTeacherQueries request)
         {
-            return await _context.TeacherEntity.ToListAsync();
+            ResponseGridModel response = new ResponseGridModel();
+
+            try
+            {
+                List<TeacherGridReponseDTO> listTeacher = _context.TeacherEntity.Where(x => x.IsDeleted != true
+                                                                                           && (x.FisrtName.Contains(request.Name != null ? request.Name : x.FisrtName)
+                                                                                           || (x.LastName.Contains(request.Name != null ? request.Name : x.LastName))
+                                                                                           || x.UserName.Contains(request.TeacherUserName != null ? request.TeacherUserName : x.UserName)))
+                                                                                           .Select(x => new TeacherGridReponseDTO
+                                                                                           {
+                                                                                               Id = x.Id,
+                                                                                               UserName = x.UserName,
+                                                                                               Address = x.Address,
+                                                                                               Age = x.Age,
+                                                                                               BirthDay = x.BirthDate,
+                                                                                               FullName = x.FisrtName + " " + x.LastName,
+                                                                                               Phone = x.Phone,
+                                                                                           }
+                                                                                           ).ToList();
+                response.Data = listTeacher;
+                response.Total = listTeacher.Count;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+           
+
+
+            return response;
         }
 
         // GET: api/TeacherEntities/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeacherEntity>> GetTeacherEntity(Guid id)
+        public async Task<ActionResult<ResponseModel>> GetTeacherById(Guid id)
         {
-            var teacherEntity = await _context.TeacherEntity.FindAsync(id);
+            ResponseModel response = new ResponseModel();
 
-            if (teacherEntity == null)
+            try
             {
-                return NotFound();
+                TeacherReponseDTO objTeacher = _context.TeacherEntity.Where(x => x.IsDeleted != true&& x.Id == id)
+                                                                                           .Select(x => new TeacherReponseDTO
+                                                                                           {
+                                                                                               Id = x.Id,
+                                                                                               UserName = x.UserName,
+                                                                                               Address = x.Address,
+                                                                                               Age = x.Age,
+                                                                                               BirthDay = x.BirthDate,
+                                                                                               FisrtName = x.FisrtName,
+                                                                                               LastName= x.LastName,
+                                                                                               Phone = x.Phone,
+                                                                                           }
+                                                                                           ).FirstOrDefault();
+                if(objTeacher == null)
+                {
+                    return new ResponseModel
+                    {
+                        isSuccess = false,
+                        message = "Không tìm thấy giáo viên"
+                    };
+                }    
+                else
+                {
+                    response.data = objTeacher;
+                    response.isSuccess = true;
+                }    
+             
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
             }
 
-            return teacherEntity;
+
+
+            return response;
         }
 
         // PUT: api/TeacherEntities/5
@@ -71,16 +139,101 @@ namespace Do_An_Tot_Nghiep.Controllers
 
             return NoContent();
         }
+        public static string GetHash(string plainText)
+        {
+            MD5 md5 = new MD5CryptoServiceProvider();
+            // Compute hash from the bytes of text
+            md5.ComputeHash(ASCIIEncoding.ASCII.GetBytes(plainText));
+            // Get hash result after compute it
+            byte[] result = md5.Hash;
+            StringBuilder strBuilder = new StringBuilder();
+            for (int i = 0; i < result.Length; i++)
+            {
+                strBuilder.Append(result[i].ToString("x2"));
+            }
 
+            return strBuilder.ToString();
+        }
         // POST: api/TeacherEntities
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TeacherEntity>> PostTeacherEntity(TeacherEntity teacherEntity)
+        public async Task<ActionResult<ResponseModel>> CreateOrUpdateTeacher(CreateOrUpdateTeacherCommand request)
         {
-            _context.TeacherEntity.Add(teacherEntity);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTeacherEntity", new { id = teacherEntity.Id }, teacherEntity);
+            ResponseModel responseModel = new ResponseModel()
+            {
+                isSuccess = false,
+            };
+            try
+            {
+                var lastTeacher = _context.TeacherEntity.OrderByDescending(x => x.DateCreated).FirstOrDefault();
+                var checkduplicate = _context.TeacherEntity.Where(x => x.UserName == request.UserName && x.IsDeleted != true).ToList();
+                if (checkduplicate == null || checkduplicate.Count == 0)
+                {
+                    if (request.Id != null && request.Id != Guid.Empty)
+                    {
+                        var objTeacher = _context.TeacherEntity.Where(x => x.Id == request.Id && x.IsDeleted != true).FirstOrDefault();
+                        if (objTeacher != null)
+                        {
+                            objTeacher.Address = request.Address;
+                            objTeacher.Age = DateTime.Now.Year - request.BirthDay.Year;
+                            objTeacher.BirthDate = request.BirthDay;
+                            objTeacher.DateUpdate = DateTime.Now;
+                            objTeacher.FisrtName = request.FisrtName;
+                            objTeacher.LastName = request.LastName;
+                            objTeacher.Phone = request.Phone;
+                            objTeacher.UserName = request.UserName;
+                            objTeacher.Password = GetHash(request.Password);
+                            _context.TeacherEntity.Update(objTeacher);
+                            responseModel.data = objTeacher;
+                        }
+
+                    }
+                    else
+                    {
+                        TeacherEntity TeacherEntity = new TeacherEntity()
+                        {
+
+                            Address = request.Address,
+                            Status = null,
+                            IsDeleted = null,
+                            Id = new Guid(),
+                            Age = DateTime.Now.Year - request.BirthDay.Year,
+                            BirthDate = request.BirthDay,
+                            Code = lastTeacher != null ? lastTeacher.Code + 1 : 1,
+                            DateCreated = DateTime.Now,
+                            DateUpdate = DateTime.Now,
+                            FisrtName = request.FisrtName,
+                            LastName = request.LastName,
+                            Phone = request.Phone,
+                            UserName = request.UserName,
+                            Password = GetHash(request.Password),
+                            UserCreataID = request.UserLoginID,
+                            UserUpdateID = request.UserLoginID,
+
+                        };
+                        _context.TeacherEntity.Add(TeacherEntity);
+                        responseModel.data = TeacherEntity;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    responseModel.isSuccess = true;
+
+                }
+                else
+                {
+                    responseModel.message = "UserName đã tồn tại";
+                }
+                return responseModel;
+
+            }
+            catch (Exception ex)
+            {
+
+                responseModel.message = ex.Message;
+                return responseModel;
+            }
+
         }
 
         // DELETE: api/TeacherEntities/5
