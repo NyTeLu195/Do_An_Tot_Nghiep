@@ -311,7 +311,7 @@ namespace Do_An_Tot_Nghiep.Controllers
 
 
         // DELETE: api/Students/5
-        [HttpDelete("{id}")]
+        [HttpPost]
         public async Task<ActionResult<ResponseModel>> DeleteStudentsEntity(Guid id)
         {
             ResponseModel responseModel = new ResponseModel()
